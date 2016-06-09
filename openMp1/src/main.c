@@ -1,0 +1,85 @@
+#include <stdio.h>
+#include <stdlib.h>
+
+#define MULTIPLE (int) 10
+
+void multiplication_mat(int * ma, int * mb, int * mc, int taille);
+void affiche_mat(int * ma, int taille);
+
+int main(int argc, char const *argv[])
+{
+	int *A, *B, *C;
+	int taille_matrice;
+	int i, j, count = 0;
+
+	if(argc < 2)
+	{
+		printf("Vous devez spécifier au moins une taille de matrice multiple de 100.\n");
+		return 1;
+	}
+
+	taille_matrice = atoi(argv[1]);
+	printf("taille_matrice : %d\n", taille_matrice);
+
+	if((taille_matrice % MULTIPLE) != 0)
+	{
+		printf("Vous devez spécifier une taille de matrice multiple de %d.\n", MULTIPLE);
+		return 1;
+	}
+
+	A = (int*) malloc(sizeof(int) * (taille_matrice * taille_matrice));
+	B = (int*) malloc(sizeof(int) * (taille_matrice * taille_matrice));
+	C = (int*) malloc(sizeof(int) * (taille_matrice * taille_matrice));
+
+	/* Initialisation de la matrice */
+	for(i = 0; i < taille_matrice; ++i)
+	{
+		for(j = 0; j < taille_matrice; ++j)
+		{
+			A[(i*taille_matrice) + j] = count++;
+			B[(i*taille_matrice) + j] = count++;
+		}
+	}
+
+	multiplication_mat(A, B, C, taille_matrice);
+	affiche_mat(A, taille_matrice);
+	printf("\n\n");
+	// affiche_mat(B, taille_matrice);
+	// printf("\n\n");
+	affiche_mat(C, taille_matrice);
+
+	return 0;
+}
+
+
+void multiplication_mat(int * ma, int * mb, int * mc, int taille)
+{
+	int i, k, l, res;
+
+	for (k = 0; k < taille; ++k)
+	{
+		for (l = 0; l < taille; ++l)
+		{
+			res = 0;
+			for (i = 0; i < taille; ++i)
+			{
+				res += ma[(k * taille) + i] * mb[(i * taille) + l];
+			}
+			mc[(k * taille) + l] = res;
+		}
+	}
+}
+
+void affiche_mat(int * ma, int taille)
+{
+	int i, j;
+
+	for(i = 0; i < taille; ++i)
+	{
+		for(j = 0; j < taille; ++j)
+		{
+			printf("%3d ", ma[(i * taille) + j]);
+		}
+		printf("\n");
+	}
+}
