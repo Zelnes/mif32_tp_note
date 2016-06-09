@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-
+#include "../include/calculTemps.h"
 #define MULTIPLE (int) 10
 
 void multiplication_mat(int * ma, int * mb, int * mc, int taille);
@@ -11,7 +11,7 @@ int main(int argc, char const *argv[])
 	int *A, *B, *C;
 	int taille_matrice;
 	int i, j, count = 0;
-
+	struct timespec debut, fin, res;
 	if(argc < 2)
 	{
 		printf("Vous devez spécifier au moins une taille de matrice multiple de 100.\n");
@@ -31,6 +31,11 @@ int main(int argc, char const *argv[])
 	B = (int*) malloc(sizeof(int) * (taille_matrice * taille_matrice));
 	C = (int*) malloc(sizeof(int) * (taille_matrice * taille_matrice));
 
+	/*Debut du timer*/
+	if (getTimeError(&debut))
+	{
+		exit(1);
+	}
 	/* Initialisation de la matrice */
 	for(i = 0; i < taille_matrice; ++i)
 	{
@@ -42,11 +47,19 @@ int main(int argc, char const *argv[])
 	}
 
 	multiplication_mat(A, B, C, taille_matrice);
-	affiche_mat(A, taille_matrice);
-	printf("\n\n");
+	/*Fin du timer*/
+	if (getTimeError(&fin))
+	{
+		exit(1);
+	}
+	/*Affichage du temps ecoule*/
+	res=soustraction(&debut, &fin);
+	printTimespec(&res);
+	//affiche_mat(A, taille_matrice);
+	//printf("\n\n");
 	// affiche_mat(B, taille_matrice);
 	// printf("\n\n");
-	affiche_mat(C, taille_matrice);
+	//affiche_mat(C, taille_matrice);
 
 	return 0;
 }

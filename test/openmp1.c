@@ -1,16 +1,19 @@
 #include <stdio.h>
 #include <stdlib.h>
-
+#include <omp.h>
+#include "../include/calculTemps.h"
 #define MULTIPLE (int) 10
 
 void multiplication_mat(int * ma, int * mb, int * mc, int taille);
 void affiche_mat(int * ma, int taille);
+
 
 int main(int argc, char const *argv[])
 {
 	int *A, *B, *C;
 	int taille_matrice;
 	int i, j, count = 0;
+	struct timespec debut, fin, res;
 
 	if(argc < 2)
 	{
@@ -31,22 +34,39 @@ int main(int argc, char const *argv[])
 	B = (int*) malloc(sizeof(int) * (taille_matrice * taille_matrice));
 	C = (int*) malloc(sizeof(int) * (taille_matrice * taille_matrice));
 
-	/* Initialisation de la matrice */
-	for(i = 0; i < taille_matrice; ++i)
+	/*Debut du timer*/
+	if (getTimeError(&debut))
 	{
-		for(j = 0; j < taille_matrice; ++j)
-		{
-			A[(i*taille_matrice) + j] = count++;
-			B[(i*taille_matrice) + j] = count++;
-		}
+		exit(1);
 	}
+	/* Initialisation de la matrice */
+	#pragma omp parallel private(i,j) shared(taille_matrice, A, B, C)
+	{
+		#pragma omp for schedule(dynamic,2)
+		for(i = 0; i < taille_matrice; ++i)
+		{
+			for(j = 0; j < taille_matrice; ++j)
+			{
+				A[(i*taille_matrice) + j] = count++;
+				B[(i*taille_matrice) + j] = count++;
+			}
+		}
 
-	multiplication_mat(A, B, C, taille_matrice);
-	affiche_mat(A, taille_matrice);
-	printf("\n\n");
+		multiplication_mat(A, B, C, taille_matrice);
+	}
+	/*Fin du timer*/
+	if (getTimeError(&fin))
+	{
+		exit(1);
+	}
+	/*Affichage du temps ecoule*/
+	res=soustraction(&debut, &fin);
+	printTimespec(&res);
+	// affiche_mat(A, taille_matrice);
+	// printf("\n\n");
 	// affiche_mat(B, taille_matrice);
 	// printf("\n\n");
-	affiche_mat(C, taille_matrice);
+	// affiche_mat(C, taille_matrice);
 
 	return 0;
 }
@@ -55,7 +75,7 @@ int main(int argc, char const *argv[])
 void multiplication_mat(int * ma, int * mb, int * mc, int taille)
 {
 	int i, k, l, res;
-
+	#pragma omp for schedule(dynamic,2)
 	for (k = 0; k < taille; ++k)
 	{
 		for (l = 0; l < taille; ++l)
@@ -83,3 +103,4 @@ void affiche_mat(int * ma, int taille)
 		printf("\n");
 	}
 }
+

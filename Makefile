@@ -1,11 +1,10 @@
-CC=mpicc
+CC=gcc
 CPP=g++
 
-LDFLAGS=-lm
-CFLAGS=-Wall -g -DDEBUG
+LDFLAGS=-lm -fopenmp
+CFLAGS=-Wall -g -DDEBUG -fopenmp
 # CFLAGS=-Wall -g
 DEBUG=-g
-
 SRCDIR=src/
 
 SRCC=$(wildcard $(SRCDIR)*.c)
@@ -49,5 +48,3 @@ clean:
 	(cd test && rm -f *.o)
 	rm -f *.exe
 
-run:
-	mpirun -np 10 ./Projet.exe
