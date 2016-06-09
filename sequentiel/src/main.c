@@ -1,17 +1,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-/* Matrice utilisée dans le programme */
-int * matrice;
-/* Taille de la matrice utilisée dans le programme */
-int taille_matrice;
+#define MULTIPLE (int) 10
 
-
-void multiplication_mat(int * ma, int * mb, int * mc, int rows, int columns);
-void affiche_mat()
+void multiplication_mat(int * ma, int * mb, int * mc, int taille);
+void affiche_mat(int * ma, int taille);
 
 int main(int argc, char const *argv[])
 {
+	int *A, *B, *C;
+	int taille_matrice;
 	int i, j, count = 0;
 
 	if(argc < 2)
@@ -23,47 +21,65 @@ int main(int argc, char const *argv[])
 	taille_matrice = atoi(argv[1]);
 	printf("taille_matrice : %d\n", taille_matrice);
 
-	if((taille_matrice % 100) != 0)
+	if((taille_matrice % MULTIPLE) != 0)
 	{
-		printf("Vous devez spécifier une taille de matrice multiple de 100.\n");
+		printf("Vous devez spécifier une taille de matrice multiple de %d.\n", MULTIPLE);
 		return 1;
 	}
 
-	matrice = (int*) malloc(sizeof(int) * (taille_matrice * taille_matrice));
+	A = (int*) malloc(sizeof(int) * (taille_matrice * taille_matrice));
+	B = (int*) malloc(sizeof(int) * (taille_matrice * taille_matrice));
+	C = (int*) malloc(sizeof(int) * (taille_matrice * taille_matrice));
 
 	/* Initialisation de la matrice */
 	for(i = 0; i < taille_matrice; ++i)
 	{
 		for(j = 0; j < taille_matrice; ++j)
 		{
-			matrice[(i*taille_matrice) + j] = count++;
+			A[(i*taille_matrice) + j] = count++;
+			B[(i*taille_matrice) + j] = count++;
 		}
 	}
 
+	multiplication_mat(A, B, C, taille_matrice);
+	affiche_mat(A, taille_matrice);
+	printf("\n\n");
+	// affiche_mat(B, taille_matrice);
+	// printf("\n\n");
+	affiche_mat(C, taille_matrice);
 
 	return 0;
 }
 
 
-void multiplication_mat(int * ma, int * mb, int * mc, int rows, int columns)
+void multiplication_mat(int * ma, int * mb, int * mc, int taille)
 {
-	int i, j, k, l, res, cpt = 0;
+	int i, k, l, res;
 
-	for (k = 0; k < rows; ++k)
+	for (k = 0; k < taille; ++k)
 	{
-		for (l = 0; l < columns; ++l)
+		for (l = 0; l < taille; ++l)
 		{
-			for (i = 0; i < rows; ++i)
+			res = 0;
+			for (i = 0; i < taille; ++i)
 			{
-				res = 0;
-
-				for (j = 0; j < columns; ++j)
-				{
-					res += ma[(k * columns) + j] * mb[(l * rows) + i];
-				}
-				mc[cpt++] = res;
+				res += ma[(k * taille) + i] * mb[(i * taille) + l];
 			}
-			
+			mc[(k * taille) + l] = res;
 		}
+	}
+}
+
+void affiche_mat(int * ma, int taille)
+{
+	int i, j;
+
+	for(i = 0; i < taille; ++i)
+	{
+		for(j = 0; j < taille; ++j)
+		{
+			printf("%3d ", ma[(i * taille) + j]);
+		}
+		printf("\n");
 	}
 }
