@@ -16,6 +16,18 @@ OBJ=$(SRCC_:.c=.o)
 EXEC=Projet
 DIRTOCREATE=obj.dir data.dir test.dir src.dir include.dir
 
+# Rules for mpifox program
+mpifox: CC=mpicc
+mpifox: mpifox.t  
+
+# Rules for openmp program
+openmp: CC=gcc
+openmp: openmp.t  
+
+# Rules for sequentiel program
+sequentiel: CC=gcc
+sequentiel: sequentiel.t
+
 .PHONY: clean 
 all: $(DIRTOCREATE) $(EXEC)
 
@@ -41,10 +53,8 @@ $(OBJDIR)%.o: $(SRCDIR)%.c
 
 # Cleaning up commands
 grosclean: clean
-	-rm -f $(EXEC)
+	-rm -f *.exe
 
 clean:
 	(cd $(OBJDIR) && rm -f $(OBJ))
 	(cd test && rm -f *.o)
-	rm -f *.exe
-
