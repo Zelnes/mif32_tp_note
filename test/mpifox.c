@@ -28,7 +28,7 @@ int taille_matrice, taille_block;
 int main (int argc, char**argv)
 {
 	int i, j, k, l, count;
-	int * A, * B, * C, * A1, *B1, *C1;
+	int * A, * B, * C, * A1, *C1;
 
 	// Initialisation du monde
 	initialiseMonde(argc, argv);
@@ -38,7 +38,7 @@ int main (int argc, char**argv)
 	B  = (int*) malloc(sizeof(int) * (taille_block * taille_block));
 	C  = (int*) malloc(sizeof(int) * (taille_block * taille_block));
 	A1 = (int*) malloc(sizeof(int) * (taille_block * taille_block));
-	B1 = (int*) malloc(sizeof(int) * (taille_block * taille_block));
+	// B1 = (int*) malloc(sizeof(int) * (taille_block * taille_block));
 	C1 = (int*) malloc(sizeof(int) * (taille_block * taille_block));
 
 	//Initialisation de la matrice de résultat
@@ -47,27 +47,20 @@ int main (int argc, char**argv)
 		C[i] = 0;
 	}
 
-	
+
 	//Génération des matrices
-	for (i = 0; i < tab_dim[LIGNE]; i++)
+	count = calculCount(coords, taille_block, sqrt(size));
+	for (k = 0; k < taille_block; ++k)
 	{
-		for (j = 0; j < tab_dim[COLONNE]; j++)
+		for (l = 0; l < taille_block; ++l)
 		{
-			if (coords[LIGNE] == i && coords[COLONNE] == j)
-			{
-				count = calculCount(coords, taille_block, sqrt(size));
-				for (k = 0; k < taille_block; ++k)
-				{
-					for (l = 0; l < taille_block; ++l)
-					{
-						A[(k * taille_block) + l] = count++;
-						B[(k * taille_block) + l] = count++;
-					}
-					count += 2 * (taille_matrice - taille_block);
-				}
-			}
+			A[(k * taille_block) + l]  = count++;
+			B[(k * taille_block) + l]  = count++;
+			B1[(k * taille_block) + l] = B[(k * taille_block) + l];
 		}
+		count += 2 * (taille_matrice - taille_block);
 	}
+
 	//Affichage des matrices générées
 	/*for(i = 0; i < size; i++)
 	{
@@ -79,31 +72,41 @@ int main (int argc, char**argv)
 		}
 	}*/
 
-	for (i = 0; i < sqrt(size); i++)
+	for (i = 0; i < racine; i++)
 	{
 		//Diffusion diagonale de A dans A1
 		if (coords[1] - coords[0] == abs(i))
 		{
-			//Diffusion
-			//Mettre A dans A1
+			MPI_Bcast(A, taille_block * taille_block, MPI_INT, rankRow, COMM_ROWS);
+			multiplication_mat(A1, B, C1, taille_block);
 		}
 		else
 		{
+			MPI_Bcast(A1, taille_block * taille_block, MPI_INT, rankRow, COMM_ROWS);
+			multiplication_mat(A1, B, C1, taille_block);
 			//Reception
 		}
-		//Shift de B dans B1
-
-		multiplication_mat(A1, B1, C1, taille_block);
 		additionMatrice(C, C1, taille_block);
-	}
 
+		//Shift de B dans B1
+		if(rankCol == 0)
+		{
+			MPI_Send(B, taille_block * taille_block, MPI_INT, racine - 1, 0, COMM_COLS);
+			MPI_Recv(B, taille_block * taille_block, MPI_INT, 1, 0, COMM_COLS, MPI_STATUS_IGNORE);
+		}
+		else
+		{
+			MPI_Send(B, taille_block * taille_block, MPI_INT, rankCol - 1, 0, COMM_COLS);
+			MPI_Recv(B, taille_block * taille_block, MPI_INT, (rankCol + 1) % racine, 0, COMM_COLS, MPI_STATUS_IGNORE);
+		}
+	}
 
 	//printf("[%d]\t->\t[%d,%d] %d\n", rank, coords[LIGNE], coords[COLONNE], i);
 	free(A);
 	free(B);
 	free(C);
 	free(A1);
-	free(B1);
+	// free(B1);
 	free(C1);
 	MPI_Finalize();
 
