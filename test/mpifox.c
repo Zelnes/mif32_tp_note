@@ -1,17 +1,17 @@
 #include <mpi.h>
 #include <stdio.h>
 #include <stdlib.h>
-
+#include <math.h>
 #define LIGNE	1
 #define COLONNE 0
 void multiplication_mat(int * ma, int * mb, int * mc, int taille);
 
 int main (int argc, char**argv)
 {
-	int rank, size, i, j;
+	int rank, size, i, j, k, l, count = 0;;
 	int tmp, tab_dim[2], reorder, coords[2], coordsBcastSrc[2];
 	int periods[2] = {0,0};
-	int * A, * B, * C, * A1, *B1, *C1, taille_matrice, taille_block;
+	int * A, * B, * C, * A1, *B1, taille_matrice, taille_block;
 	int rankBcastSrc;
 	MPI_Comm COMM_CART, COMM_ROWS;
 
@@ -27,16 +27,15 @@ int main (int argc, char**argv)
 		MPI_Finalize();
 		return 1;
 	}
-	taille_block = taille_matrice/4;
+	taille_block = taille_matrice/size;
 	A = (int*) malloc(sizeof(int) * (taille_block * taille_block));
 	B = (int*) malloc(sizeof(int) * (taille_block * taille_block));
 	C = (int*) malloc(sizeof(int) * (taille_block * taille_block));
 	A1 = (int*) malloc(sizeof(int) * (taille_block * taille_block));
 	B1 = (int*) malloc(sizeof(int) * (taille_block * taille_block));
-	C1 = (int*) malloc(sizeof(int) * (taille_block * taille_block));
 	
-	tab_dim[LIGNE] = 2;
-	tab_dim[COLONNE] = 2;
+	tab_dim[LIGNE] = sqrt(size);
+	tab_dim[COLONNE] = sqrt(size);
 	reorder = 0;
 
 	MPI_Cart_create (MPI_COMM_WORLD, 2, tab_dim, periods, reorder, &COMM_CART);
@@ -49,7 +48,24 @@ int main (int argc, char**argv)
 			printf(" rank %d\t->\t[%d,%d]\n", rank, coords[LIGNE], coords[COLONNE]);
 		}
 	}
-	
+	for(i=0;i<tab_dim[LIGNE];i++)
+	{
+		for(j=0;j<tab_dim[COLONNE];j++)
+		{
+			if(coords[LIGNE]==i && coords[COLONNE]==j)
+			{
+				for(k = 0; k < taille_block; ++k)
+				{
+					for(l = 0; l < taille_block; ++l)
+					{
+						A[(k*taille_block) + l] = count++;
+						B[(k*taille_block) + l] = count++;
+					}
+				}
+			}
+		}
+	}
+	//MPI_Cart_rank(COMM_CART, int *coords, int *rank)
 	/*
 	for(i = 0; i < taille_matrice; ++i)
 	{
@@ -72,16 +88,11 @@ int main (int argc, char**argv)
 	MPI_Bcast(&i, 1, MPI_INT, rankBcastSrc, COMM_CART);*/
 
 	//printf("[%d]\t->\t[%d,%d] %d\n", rank, coords[LIGNE], coords[COLONNE], i);
-
-
-	
-
 	free(A);
 	free(B);
 	free(C);
 	free(A1);
 	free(B1);
-	free(C1);
 	MPI_Finalize();
 
 	return 0;
