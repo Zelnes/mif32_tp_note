@@ -5,6 +5,9 @@
 #define LIGNE	1
 #define COLONNE 0
 void multiplication_mat(int * ma, int * mb, int * mc, int taille);
+void affiche_mat(int * ma, int taille);
+void calculProchain(int *coords, int *prochain, int ligne_cart, int colone_cart);
+void calculPrcedent(int *coords, int *precedent, int ligne_cart, int colone_cart);
 
 int main (int argc, char**argv)
 {
@@ -13,6 +16,7 @@ int main (int argc, char**argv)
 	int periods[2] = {0,0};
 	int * A, * B, * C, * A1, *B1, taille_matrice, taille_block;
 	int rankBcastSrc;
+	int coords_actuel[2],root;
 	MPI_Comm COMM_CART, COMM_ROWS;
 
 	MPI_Init (&argc, &argv);      /* starts MPI */
@@ -22,17 +26,23 @@ int main (int argc, char**argv)
 	taille_matrice = atoi(argv[1]);
 	//printf("%d",taille_matrice);
 	
-	if(size!=4 || taille_matrice%100!=0)
+	if(size!=4 || taille_matrice%4!=0)
 	{
 		MPI_Finalize();
 		return 1;
 	}
 	taille_block = taille_matrice/size;
+	//Allocations des matrices
 	A = (int*) malloc(sizeof(int) * (taille_block * taille_block));
 	B = (int*) malloc(sizeof(int) * (taille_block * taille_block));
 	C = (int*) malloc(sizeof(int) * (taille_block * taille_block));
 	A1 = (int*) malloc(sizeof(int) * (taille_block * taille_block));
 	B1 = (int*) malloc(sizeof(int) * (taille_block * taille_block));
+	//Initialisation de la matrice de résultat
+	for(i=0;i<taille_block * taille_block;i++)
+	{
+		C[i] = 0;
+	}
 	
 	tab_dim[LIGNE] = sqrt(size);
 	tab_dim[COLONNE] = sqrt(size);
@@ -42,16 +52,18 @@ int main (int argc, char**argv)
 	MPI_Cart_coords (COMM_CART, rank, 2, coords);
 	for(i = 0; i < size; i++) 
 	{
-		MPI_Barrier(MPI_COMM_WORLD);
+		MPI_Barrier(COMM_CART);
 		if (i == rank) 
 		{
 			printf(" rank %d\t->\t[%d,%d]\n", rank, coords[LIGNE], coords[COLONNE]);
 		}
 	}
+	//Génération des matrices
 	for(i=0;i<tab_dim[LIGNE];i++)
 	{
 		for(j=0;j<tab_dim[COLONNE];j++)
 		{
+			MPI_Barrier(COMM_CART);
 			if(coords[LIGNE]==i && coords[COLONNE]==j)
 			{
 				for(k = 0; k < taille_block; ++k)
@@ -63,8 +75,27 @@ int main (int argc, char**argv)
 					}
 				}
 			}
+			coords_actuel[0] = i;
+			coords_actuel[1] = j;
+			MPI_Cart_rank(COMM_CART, coords_actuel, &root);
+			MPI_Barrier(COMM_CART);
+			MPI_Bcast(&count, 1, MPI_INT, root, COMM_CART);
 		}
 	}
+	
+	for(i = 0; i < size; i++) 
+	{
+		MPI_Barrier(COMM_CART);
+		if (i == rank) 
+		{
+			affiche_mat(A,taille_block);
+		}
+	}
+	/*tab_dim[LIGNE] = 1;
+	tab_dim[COLONNE] = SIZE / matriceTaille;
+	MPI_Cart_create (COMM_CART, 1, tab_dim, periods, reorder, &COMM_ROWS);
+	MPI_Cart_sub(MPI_Comm comm, int *remain_dims, MPI_Comm *newcomm)*/
+	//int MPI_Cart_shift(MPI_Comm comm, int direction, int disp, int *rank_source, int *rank_dest)
 	//MPI_Cart_rank(COMM_CART, int *coords, int *rank)
 	/*
 	for(i = 0; i < taille_matrice; ++i)
@@ -116,4 +147,41 @@ void multiplication_mat(int * ma, int * mb, int * mc, int taille)
 			mc[(k * taille) + l] = res;
 		}
 	}
+}
+
+void affiche_mat(int * ma, int taille)
+{
+	int i, j;
+
+	for(i = 0; i < taille; ++i)
+	{
+		for(j = 0; j < taille; ++j)
+		{
+			printf("%3d ", ma[(i * taille) + j]);
+		}
+		printf("\n");
+	}
+}
+
+void calculProchain(int *coords, int *prochain, int ligne_cart, int colone_cart)
+{
+	if(coords[1]<colone_cart-1)
+	{
+		prochain[0] = coords[0];
+		prochain[1] = coords[1]+1;
+	}
+	else if(coords[1]==colone_cart-1 && coords[0]!= ligne_cart-1 )
+	{ 
+		prochain[0] = coords[0]+1;
+		prochain[1] = 0;
+	}
+	else
+	{
+		prochain[0] = -1;
+		prochain[1] = -1;
+	}
+}
+void calculPrcedent(int *coords, int *precedent, int ligne_cart, int colone_cart)
+{
+	
 }
