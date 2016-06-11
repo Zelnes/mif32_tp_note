@@ -94,11 +94,19 @@ int main (int argc, char**argv)
 	for(i=0;i<sqrt(size);i++)
 	{
 		//Diffusion diagonale de A dans A1
-		
+		if(coords[1]-coords[0]==abs(i))
+		{
+			//Diffusion	
+			//Mettre A dans A1
+		}
+		else
+		{
+			//Reception
+		}
 		//Shift de B dans B1
 		
-		//multiplication_mat(A1, B1, C1, taille_block);
-		//additionMatrice(C, C1, taille_block);
+		multiplication_mat(A1, B1, C1, taille_block);
+		additionMatrice(C, C1, taille_block);
 	}
 
 
