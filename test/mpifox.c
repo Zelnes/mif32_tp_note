@@ -112,7 +112,7 @@ int main (int argc, char**argv)
 
 void initialiseMonde(int argc, char** argv)
 {
-	int remain[2], periods[2], reorder, racine;
+	int remain[2], periods[2], reorder, racine, i;
 
 	MPI_Init (&argc, &argv);      				  /* starts MPI */
 	MPI_Comm_rank (MPI_COMM_WORLD, &rank);        /* get current process id */
@@ -164,8 +164,14 @@ void initialiseMonde(int argc, char** argv)
 	// Récupération du rang dans le communicateur en colonne
 	MPI_Comm_rank(COMM_COLS, &rankCol);
 
-	MPI_Barrier(COMM_CART);
-	printf("[%d]:[%d]:[%d]:[%d]\t->\t[%d,%d]\n", rank, rankCart, rankRow, rankCol, coords[LIGNE], coords[COLONNE]);
+	for(i = 0; i < size; i++)
+	{
+		MPI_Barrier(COMM_CART);
+		if (i == rank)
+		{
+			printf("[%d]:[%d]:[%d]:[%d]\t->\t[%d,%d]\n", rank, rankCart, rankRow, rankCol, coords[LIGNE], coords[COLONNE]);
+		}
+	}
 }
 
 
