@@ -7,6 +7,8 @@
 void multiplication_mat(int * ma, int * mb, int * mc, int taille);
 void affiche_mat(int * ma, int taille);
 int calculCount(int *coords, int taille_block, int taille_cart);
+void additionMatrice(int *res, int *add, int taille)
+
 int main (int argc, char**argv)
 {
 	int rank, size, i, j, k, l, count;
@@ -16,7 +18,7 @@ int main (int argc, char**argv)
 	int * A, * B, * C, * A1, *B1, *C1, taille_matrice, taille_block;
 	int rankBcastSrc;
 	int coords_actuel[2],root;
-	MPI_Comm COMM_CART, COMM_ROWS;
+	MPI_Comm COMM_CART;
 
 	MPI_Init (&argc, &argv);      /* starts MPI */
 	MPI_Comm_rank (MPI_COMM_WORLD, &rank);        /* get current process id */
@@ -79,26 +81,26 @@ int main (int argc, char**argv)
 		}
 	}
 	//Affichage des matrices générées
-	for(i = 0; i < size; i++) 
+	/*for(i = 0; i < size; i++) 
 	{
 		MPI_Barrier(COMM_CART);
 		if (i == rank) 
 		{
 			affiche_mat(A,taille_block);
-			//affiche_mat(B,taille_block);
+			affiche_mat(B,taille_block);
 		}
-	}
+	}*/
 	
-	//MPI_Cart_sub(COMM_CART, remain, &COMM_ROWS)
-	/*
-	 for(i=0;i<sqrt(size);i++)
-	 {
+	for(i=0;i<sqrt(size);i++)
+	{
 		//Diffusion diagonale de A dans A1
+		
 		//Shift de B dans B1
-		//multiplication_mat(A1, B1, C1, int taille)
-		//C = C+C1
-	 }
-	*/
+		
+		//multiplication_mat(A1, B1, C1, taille_block);
+		//additionMatrice(C, C1, taille_block);
+	}
+
 
 	//printf("[%d]\t->\t[%d,%d] %d\n", rank, coords[LIGNE], coords[COLONNE], i);
 	free(A);
@@ -107,7 +109,6 @@ int main (int argc, char**argv)
 	free(A1);
 	free(B1);
 	free(C1);
-	//MPI_Comm_free(COMM_CART);
 	MPI_Finalize();
 
 	return 0;
@@ -151,4 +152,13 @@ void affiche_mat(int * ma, int taille)
 int calculCount(int *coords, int taille_block, int taille_cart)
 {
 	return 2*(coords[0]*taille_block*taille_block*taille_cart + coords[1]*taille_block);
+}
+
+void additionMatrice(int *res, int *add, int taille)
+{
+	int i;
+	for(i=0;i<taille;i++)
+	{
+		res[i] += add[i]; 
+	}
 }
