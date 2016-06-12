@@ -148,22 +148,24 @@ int main (int argc, char**argv)
 
 void initialiseMonde(int argc, char** argv)
 {
-	int remain[2], periods[2], reorder, i;
+	int remain[2], periods[2], reorder, i, nb_thread;
 
 	MPI_Init (&argc, &argv);      				  /* starts MPI */
 	MPI_Comm_rank (MPI_COMM_WORLD, &rank);        /* get current process id */
 	MPI_Comm_size (MPI_COMM_WORLD, &size);        /* get number of processes */
 
 	// On vérifie qu'il existe au moins un deuxieme argument 
-	if(argc < 2)
+	if(argc < 3)
 	{
 		MPI_Finalize();
 		if(rank == 0)
-			printf("Le nombre d'arguments n'est pas suffisant\n");
+			printf("Le nombre d'arguments n'est pas suffisant\nAssurez vous de préciser en premier argument le nombre de thread puis la taille de matrice");
 		exit(1);
 	}
+	nb_thread = atoi(argv[1]);
+	omp_set_num_threads(nb_thread);
 
-	taille_matrice = atoi(argv[1]);
+	taille_matrice = atoi(argv[2]);
 
 	racine = sqrt(size);
 	if (racine * racine != size || taille_matrice % racine != 0)

@@ -11,16 +11,18 @@ void affiche_mat(int * ma, int taille);
 int main(int argc, char const *argv[])
 {
 	int *A, *B, *C;
-	int taille_matrice;
+	int taille_matrice, nb_thread;
 	int i, j, count = 0;
 
-	if(argc < 2)
+	if(argc < 3)
 	{
-		printf("Vous devez spécifier au moins une taille de matrice multiple de 100.\n");
+		printf("Vous devez spécifier le nombre de thread max à utiliser et la taille de matrice multiple de 100.\n");
+		printf("Exemple : ./openmp.exe 4 100\n");
 		return 1;
 	}
+	omp_set_num_threads(atoi(argv[1]));
 
-	taille_matrice = atoi(argv[1]);
+	taille_matrice = atoi(argv[2]);
 
 	A = (int*) malloc(sizeof(int) * (taille_matrice * taille_matrice));
 	B = (int*) malloc(sizeof(int) * (taille_matrice * taille_matrice));
