@@ -19,3 +19,4 @@ dans le makefile les lignes suivantes :
 Pour faire tous les tests et avoir un fichier log généré, il faut taper:
 	$ make bench
 Le fichier log s'appelle res_temps.txt
+Les 4 fichiers principaux sont dans le répertoire test. 
