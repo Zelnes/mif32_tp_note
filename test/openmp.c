@@ -21,13 +21,6 @@ int main(int argc, char const *argv[])
 	}
 
 	taille_matrice = atoi(argv[1]);
-	printf("taille_matrice : %d\n", taille_matrice);
-
-	if((taille_matrice % MULTIPLE) != 0)
-	{
-		printf("Vous devez spécifier une taille de matrice multiple de %d.\n", MULTIPLE);
-		return 1;
-	}
 
 	A = (int*) malloc(sizeof(int) * (taille_matrice * taille_matrice));
 	B = (int*) malloc(sizeof(int) * (taille_matrice * taille_matrice));
@@ -60,11 +53,6 @@ int main(int argc, char const *argv[])
 	}
 	/*Affichage du temps ecoule*/
 	printTimeRes();
-	// affiche_mat(A, taille_matrice);
-	// printf("\n\n");
-	// affiche_mat(B, taille_matrice);
-	// printf("\n\n");
-	// affiche_mat(C, taille_matrice);
 
 	return 0;
 }

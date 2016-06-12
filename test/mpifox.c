@@ -22,7 +22,7 @@ void initialiseMonde(int argc, char** argv);
 int size, rank, rankCart, rankRow, rankCol, racine;
 int coords[2], tab_dim[2];
 MPI_Comm COMM_CART, COMM_ROWS, COMM_COLS;
-int taille_matrice, taille_block;
+int taille_matrice, taille_block, square_block;
 //-------------------------------------------------------------------
 
 
@@ -35,13 +35,15 @@ int main (int argc, char**argv)
 	// Initialisation du monde
 	initialiseMonde(argc, argv);
 
+	square_block = taille_block * taille_block;
+
 	//Allocations des matrices
-	A  = (int*) malloc(sizeof(int) * (taille_block * taille_block));
-	B  = (int*) malloc(sizeof(int) * (taille_block * taille_block));
-	C  = (int*) malloc(sizeof(int) * (taille_block * taille_block));
-	A1 = (int*) malloc(sizeof(int) * (taille_block * taille_block));
-	B1 = (int*) malloc(sizeof(int) * (taille_block * taille_block));
-	C1 = (int*) malloc(sizeof(int) * (taille_block * taille_block));
+	A  = (int*) malloc(sizeof(int) * (square_block));
+	B  = (int*) malloc(sizeof(int) * (square_block));
+	C  = (int*) malloc(sizeof(int) * (square_block));
+	A1 = (int*) malloc(sizeof(int) * (square_block));
+	B1 = (int*) malloc(sizeof(int) * (square_block));
+	C1 = (int*) malloc(sizeof(int) * (square_block));
 
 	if(rank == 0)
 	{
@@ -52,12 +54,12 @@ int main (int argc, char**argv)
 			exit(1);
 		}
 	}
+
 	//Initialisation de la matrice de résultat
-	for (i = 0; i < taille_block * taille_block; i++)
+	for (i = 0; i < square_block; i++)
 	{
 		C[i] = 0;
 	}
-
 
 	//Génération des matrices
 	count = calculCount(coords, taille_block, sqrt(size));
@@ -71,35 +73,20 @@ int main (int argc, char**argv)
 		count += 2 * (taille_matrice - taille_block);
 	}
 
-	//Affichage des matrices générées
-	/*for(i = 0; i < size; i++)
-	{
-		MPI_Barrier(COMM_CART);
-		if (i == rank)
-		{
-			affiche_mat(A,taille_block);
-			affiche_mat(B,taille_block);
-		}
-	}*/
-
 	for (i = 0; i < racine; i++)
 	{
-		MPI_Barrier(MPI_COMM_WORLD);
-		printf("[%d] Debut boucle %d\n", rank, i);
-		//Diffusion diagonale de A dans A1
-		printf("[%d] Bcast a partir de %d en ligne %d\n", rank, (coords[0] + i) % racine, rankRow);
 		if ((coords[0] + i) % racine == rankRow)
 		{
-			MPI_Bcast(A, taille_block * taille_block, MPI_INT, (coords[0] + i) % racine, COMM_ROWS);
+			MPI_Bcast(A, square_block, MPI_INT, (coords[0] + i) % racine, COMM_ROWS);
 			multiplication_mat(A, B, C1, taille_block);
 		}
 		else
 		{
-			MPI_Bcast(A1, taille_block * taille_block, MPI_INT, (coords[0] + i) % racine, COMM_ROWS);
+			MPI_Bcast(A1, square_block, MPI_INT, (coords[0] + i) % racine, COMM_ROWS);
 			multiplication_mat(A1, B, C1, taille_block);
 			//Reception
 		}
-		additionMatrice(C, C1, taille_block);
+		additionMatrice(C, C1, square_block);
 
 		if(rankCol == 0)
 			dest = racine - 1;
@@ -110,35 +97,19 @@ int main (int argc, char**argv)
 
 		if(rankCol % 2 == 0)
 		{
-			MPI_Send(B,  taille_block * taille_block, MPI_INT, dest, 0, COMM_COLS);
-			MPI_Recv(B1, taille_block * taille_block, MPI_INT, src,  0, COMM_COLS, MPI_STATUS_IGNORE);
+			MPI_Send(B,  square_block, MPI_INT, dest, 0, COMM_COLS);
+			MPI_Recv(B1, square_block, MPI_INT, src,  0, COMM_COLS, MPI_STATUS_IGNORE);
 		}
 		else
 		{
-			MPI_Recv(B1, taille_block * taille_block, MPI_INT, src,  0, COMM_COLS, MPI_STATUS_IGNORE);
-			MPI_Send(B,  taille_block * taille_block, MPI_INT, dest, 0, COMM_COLS);
+			MPI_Recv(B1, square_block, MPI_INT, src,  0, COMM_COLS, MPI_STATUS_IGNORE);
+			MPI_Send(B,  square_block, MPI_INT, dest, 0, COMM_COLS);
 		}
 
 		// Copie de B1 dans B
 		tmpB = B;
 		B = B1;
 		B1 = tmpB;
-
-		//Shift de B dans B1
-		// if(rankCol == 0)
-		// {
-		// 	printf("[%d] Avant send pour %d\n", rank, racine - 1);
-		// }
-		// else
-		// {
-		// 	printf("[%d] Avant send pour %d\n", rank, rankCol - 1);
-		// 	MPI_Send(B, taille_block * taille_block, MPI_INT, rankCol - 1, 0, COMM_COLS);
-		// 	printf("[%d] Après send\n", rank);
-		// 	MPI_Recv(B, taille_block * taille_block, MPI_INT, (rankCol + 1) % racine, 0, COMM_COLS, MPI_STATUS_IGNORE);
-		// }
-
-		MPI_Barrier(MPI_COMM_WORLD);
-		printf("[%d] Fin boucle %d\n", rank, i);
 	}
 
 	MPI_Barrier(MPI_COMM_WORLD);
@@ -163,7 +134,6 @@ int main (int argc, char**argv)
 		}
 	}
 
-	//printf("[%d]\t->\t[%d,%d] %d\n", rank, coords[LIGNE], coords[COLONNE], i);
 	free(A);
 	free(B);
 	free(C);
@@ -171,10 +141,6 @@ int main (int argc, char**argv)
 	free(B1);
 	free(C1);
 	MPI_Finalize();
-
-
-	if(rank == 0)
-		printf("Fin\n");
 
 	return 0;
 }
@@ -198,7 +164,6 @@ void initialiseMonde(int argc, char** argv)
 
 	racine = sqrt(size);
 	if (racine * racine != size || taille_matrice % size != 0)
-	// if (size != 4 || taille_matrice % 4 != 0)
 	{
 		MPI_Finalize();
 		exit(1);
@@ -232,15 +197,6 @@ void initialiseMonde(int argc, char** argv)
 	MPI_Cart_sub(COMM_CART, remain, &COMM_COLS);
 	// Récupération du rang dans le communicateur en colonne
 	MPI_Comm_rank(COMM_COLS, &rankCol);
-
-	for(i = 0; i < size; i++)
-	{
-		MPI_Barrier(COMM_CART);
-		if (i == rank)
-		{
-			printf("[%d]:[%d]:[%d]:[%d]\t->\t[%d,%d]\n", rank, rankCart, rankRow, rankCol, coords[0], coords[1]);
-		}
-	}
 }
 
 
