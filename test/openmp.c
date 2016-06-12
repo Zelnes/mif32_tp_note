@@ -13,7 +13,6 @@ int main(int argc, char const *argv[])
 	int *A, *B, *C;
 	int taille_matrice;
 	int i, j, count = 0;
-	struct timespec debut, fin, res;
 
 	if(argc < 2)
 	{
@@ -35,7 +34,7 @@ int main(int argc, char const *argv[])
 	C = (int*) malloc(sizeof(int) * (taille_matrice * taille_matrice));
 
 	/*Debut du timer*/
-	if (getTimeError(&debut))
+	if (getTimeDebut())
 	{
 		exit(1);
 	}
@@ -55,13 +54,12 @@ int main(int argc, char const *argv[])
 		multiplication_mat(A, B, C, taille_matrice);
 	}
 	/*Fin du timer*/
-	if (getTimeError(&fin))
+	if (getTimeFin())
 	{
 		exit(1);
 	}
 	/*Affichage du temps ecoule*/
-	res=soustraction(&debut, &fin);
-	printTimespec(&res);
+	printTimeRes();
 	// affiche_mat(A, taille_matrice);
 	// printf("\n\n");
 	// affiche_mat(B, taille_matrice);
@@ -75,6 +73,7 @@ int main(int argc, char const *argv[])
 void multiplication_mat(int * ma, int * mb, int * mc, int taille)
 {
 	int i, k, l, res;
+
 	#pragma omp for schedule(dynamic,2)
 	for (k = 0; k < taille; ++k)
 	{

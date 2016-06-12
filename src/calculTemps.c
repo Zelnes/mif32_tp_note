@@ -1,4 +1,8 @@
 #include "../include/calculTemps.h"
+
+struct timespec debut, fin, res;
+
+
 int getTimeError(struct timespec *temps)
 {
 	if(clock_gettime(CLOCK_MONOTONIC, temps)) 
@@ -70,4 +74,21 @@ struct timespec soustraction(struct timespec *debut, struct timespec *fin)
 		}
 	}
 	return resultat;
+}
+
+
+int getTimeDebut()
+{
+	return getTimeError(&debut);
+}
+
+int getTimeFin()
+{
+	return getTimeError(&fin);
+}
+
+void printTimeRes()
+{
+	res = soustraction(&debut, &fin);
+	printTimespec(&res);
 }
