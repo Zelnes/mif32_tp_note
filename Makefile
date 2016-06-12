@@ -28,6 +28,69 @@ openmp: openmp.t
 sequentiel: CC=gcc
 sequentiel: sequentiel.t
 
+# Rules for hybrid program
+hybrid: CC=mpicc
+hybrid: hybrid.t
+
+bench: mpifox openmp sequentiel hybrid
+	rm -f res_temps.txt
+	printf "[./sequentiel.exe 100] " >res_temps.txt
+	./sequentiel.exe 100 >>res_temps.txt
+	printf "[./sequentiel.exe 500] " >>res_temps.txt
+	./sequentiel.exe 500 >>res_temps.txt
+	printf "[./sequentiel.exe 1000] " >>res_temps.txt
+	./sequentiel.exe 1000 >>res_temps.txt
+	printf "[./sequentiel.exe 2000] " >>res_temps.txt
+	./sequentiel.exe 2000 >>res_temps.txt
+
+	printf "[./openmp.exe 100] " >>res_temps.txt
+	./openmp.exe 100 >>res_temps.txt
+	printf "[./openmp.exe 500] " >>res_temps.txt
+	./openmp.exe 500 >>res_temps.txt
+	printf "[./openmp.exe 1000] " >>res_temps.txt
+	./openmp.exe 1000 >>res_temps.txt
+	printf "[./openmp.exe 2000] " >>res_temps.txt
+	./openmp.exe 2000 >>res_temps.txt
+
+	printf "[mpirun -np 4 ./mpifox.exe 100] " >>res_temps.txt
+	mpirun -np 4 ./mpifox.exe 100 >>res_temps.txt
+	printf "[mpirun -np 4 ./mpifox.exe 500] " >>res_temps.txt
+	mpirun -np 4 ./mpifox.exe 500 >>res_temps.txt
+	printf "[mpirun -np 4 ./mpifox.exe 1000] " >>res_temps.txt
+	mpirun -np 4 ./mpifox.exe 1000 >>res_temps.txt
+	printf "[mpirun -np 4 ./mpifox.exe 2000] " >>res_temps.txt
+	mpirun -np 4 ./mpifox.exe 2000 >>res_temps.txt
+
+	printf "[mpirun -np 16 ./mpifox.exe 100] " >>res_temps.txt
+	mpirun -np 16 ./mpifox.exe 100 >>res_temps.txt
+	printf "[mpirun -np 16 ./mpifox.exe 500] " >>res_temps.txt
+	mpirun -np 16 ./mpifox.exe 500 >>res_temps.txt
+	printf "[mpirun -np 16 ./mpifox.exe 1000] " >>res_temps.txt
+	mpirun -np 16 ./mpifox.exe 1000 >>res_temps.txt
+	printf "[mpirun -np 16 ./mpifox.exe 2000] " >>res_temps.txt
+	mpirun -np 16 ./mpifox.exe 2000 >>res_temps.txt
+
+	printf "[mpirun -np 4 ./hybrid.exe 100] " >>res_temps.txt
+	mpirun -np 4 ./hybrid.exe 100 >>res_temps.txt
+	printf "[mpirun -np 4 ./hybrid.exe 500] " >>res_temps.txt
+	mpirun -np 4 ./hybrid.exe 500 >>res_temps.txt
+	printf "[mpirun -np 4 ./hybrid.exe 1000] " >>res_temps.txt
+	mpirun -np 4 ./hybrid.exe 1000 >>res_temps.txt
+	printf "[mpirun -np 4 ./hybrid.exe 2000] " >>res_temps.txt
+	mpirun -np 4 ./hybrid.exe 2000 >>res_temps.txt
+
+	printf "[mpirun -np 16 ./hybrid.exe 100] " >>res_temps.txt
+	mpirun -np 16 ./hybrid.exe 100 >>res_temps.txt
+	printf "[mpirun -np 16 ./hybrid.exe 500] " >>res_temps.txt
+	mpirun -np 16 ./hybrid.exe 500 >>res_temps.txt
+	printf "[mpirun -np 16 ./hybrid.exe 1000] " >>res_temps.txt
+	mpirun -np 16 ./hybrid.exe 1000 >>res_temps.txt
+	printf "[mpirun -np 16 ./hybrid.exe 2000] " >>res_temps.txt
+	mpirun -np 16 ./hybrid.exe 2000 >>res_temps.txt
+
+
+
+
 .PHONY: clean 
 all: $(DIRTOCREATE) $(EXEC)
 

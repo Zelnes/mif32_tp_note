@@ -63,15 +63,16 @@ int main (int argc, char**argv)
 
 	//Génération des matrices
 	count = calculCount(coords, taille_block, sqrt(size));
-	for (k = 0; k < taille_block; ++k)
-	{
-		for (l = 0; l < taille_block; ++l)
+	#pragma omp for schedule(dynamic,2)
+		for (k = 0; k < taille_block; ++k)
 		{
-			A[(k * taille_block) + l]  = count++;
-			B[(k * taille_block) + l]  = count++;
+			for (l = 0; l < taille_block; ++l)
+			{
+				A[(k * taille_block) + l]  = count++;
+				B[(k * taille_block) + l]  = count++;
+			}
+			count += 2 * (taille_matrice - taille_block);
 		}
-		count += 2 * (taille_matrice - taille_block);
-	}
 
 	for (i = 0; i < racine; i++)
 	{
@@ -209,6 +210,8 @@ void initialiseMonde(int argc, char** argv)
 void multiplication_mat(int * ma, int * mb, int * mc, int taille)
 {
 	int i, k, l, res;
+
+	#pragma omp for schedule(dynamic,2)
 	for (k = 0; k < taille; ++k)
 	{
 		for (l = 0; l < taille; ++l)
@@ -246,6 +249,8 @@ int calculCount(int *coords, int taille_block, int taille_cart)
 void additionMatrice(int *res, int *add, int taille)
 {
 	int i;
+
+	#pragma omp for schedule(dynamic,2)
 	for (i = 0; i < taille; i++)
 	{
 		res[i] += add[i];
