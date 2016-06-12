@@ -16,3 +16,6 @@ dans le makefile les lignes suivantes :
 	# Regles pour le programme toto
 	toto: CC=compilerAUtiliser
 	toto: toto.t
+Pour faire tous les tests et avoir un fichier log généré, il faut taper:
+	$ make bench
+Le fichier log s'appelle res_temps.txt
